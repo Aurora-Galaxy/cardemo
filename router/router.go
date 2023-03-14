@@ -31,6 +31,7 @@ func NewRouter() *gin.Engine {
 			authed.POST("user/carnumber", api.BindCar)   //绑定车牌号
 			authed.POST("user/change", api.ChangeStatus) //更改充电桩使用状态
 			authed.POST("/user/reserve", api.Reserve)    //充电桩预约
+			authed.GET("/user/history", api.GetHistory)  //获取用户使用充电桩历史记录
 		}
 	}
 	return r

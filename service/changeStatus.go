@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type ChangeStausService struct {
+type ChangeStatusService struct {
 	Id   int `json:"id" form:"id"`
 	Time int `json:"time" form:"time"`
 }
@@ -19,7 +19,7 @@ type ReserveService struct {
 }
 
 // Change 改变充电桩的状态
-func (service ChangeStausService) Change(token string) serializer.Response {
+func (service ChangeStatusService) Change(token string) serializer.Response {
 	claims, _ := util.ParseToken(token)
 	StartTime := time.Now().UnixMilli()
 	var Endtime int64
@@ -45,6 +45,16 @@ func (service ChangeStausService) Change(token string) serializer.Response {
 			Status: 400,
 			Data:   nil,
 			Msg:    "添加充电桩开始和结束时间出错",
+			Error:  err,
+		}
+	}
+	//添加使用记录
+	err = AddHistoryRecord(claims.Id, StartTime, Endtime, uint(service.Id))
+	if err != nil {
+		return serializer.Response{
+			Status: 400,
+			Data:   nil,
+			Msg:    "历史记录中添加充电桩开始和结束时间出错",
 			Error:  err,
 		}
 	}

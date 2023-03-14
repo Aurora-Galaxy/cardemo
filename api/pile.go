@@ -8,7 +8,7 @@ import (
 
 // ChangeStatus 改变充电桩的使用状态
 func ChangeStatus(c *gin.Context) {
-	var service service2.ChangeStausService
+	var service service2.ChangeStatusService
 	authorization := c.Request.Header.Get("Authorization")
 	err := c.ShouldBind(&service)
 	if err != nil {
