@@ -71,10 +71,10 @@ func (phoneService *PhoneService) PhoneRelevant(authorization string) serializer
 // SendMsg 发送短信验证码
 func (service *CodeService) SendMsg() serializer.Response {
 	rand.Seed(time.Now().UnixNano())    //设置随机种子
-	codeInt := rand.Intn(6000)          //随机生成验证码
+	codeInt := 1000 + rand.Intn(6000)          //随机生成验证码
 	codeString := strconv.Itoa(codeInt) //将code转成string
 	temp := service.Phone + "code"
-	err := cache.RedisClient.Set(temp, codeString, 0) //保存到redis，有效期10分钟
+	err := cache.RedisClient.Set(temp, codeString, 10*time.Minute) //保存到redis，有效期10分钟
 	if err != nil {
 		logging.Info(err)
 	}

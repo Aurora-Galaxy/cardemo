@@ -16,12 +16,26 @@ type ChangeStatusService struct {
 type ReserveService struct {
 	Id   int `json:"id" form:"id"`
 	Time int `json:"time" form:"time"`
+	StartTime string `json:"start_time" form:"start_time"`
 }
 
 // Change 改变充电桩的状态
 func (service ChangeStatusService) Change(token string) serializer.Response {
 	claims, _ := util.ParseToken(token)
+	//查找该用户是否已经充电
+	var count int
+	model.DB.Table("charging_pile").Where("user_id = ?", claims.UserName).Count(&count)
+	if count > 0 {
+		return serializer.Response{
+			Status: 400,
+			Data:   nil,
+			Msg:    "该用户已经在充电，请勿重复充电",
+			Error:  nil,
+		}
+	}
 	StartTime := time.Now().UnixMilli()
+	var user model.User
+	model.DB.Table("user").Where("id = ?",claims.Id).First(&user)
 	var Endtime int64
 	if service.Time == 1 {
 		Endtime = StartTime + time.Hour.Milliseconds()
@@ -78,6 +92,17 @@ func (service ChangeStatusService) Change(token string) serializer.Response {
 			Error:  err,
 		}
 	}
+	//扣除相应的钱数
+	err = model.DB.Table("user").Where("id = ?", claims.Id).
+		Update("money", user.Money - service.Time).Error
+	if err != nil {
+		return serializer.Response{
+			Status: 400,
+			Data:   nil,
+			Msg:    "付款时出错",
+			Error:  err,
+		}
+	}
 	//获取充电桩信息
 	var pile model.ChargingPile
 	err = model.DB.Table("charging_pile").Where("id = ?", service.Id).First(&pile).Error
@@ -129,8 +154,9 @@ func (service *ReserveService) ReservePile(token string) serializer.Response {
 			Error:  err,
 		}
 	}
-	StartTime := time.Now().UnixMilli()
+	StartTime  , _ := strconv.ParseInt(service.StartTime, 10, 64)
 	var Endtime int64
+	//fmt.Println(service.Time)
 	if service.Time == 1 {
 		Endtime = StartTime + time.Hour.Milliseconds()
 	}
@@ -146,14 +172,24 @@ func (service *ReserveService) ReservePile(token string) serializer.Response {
 	if service.Time == 5 {
 		Endtime = StartTime + (time.Hour * 5).Milliseconds()
 	}
+	//fmt.Println(Endtime)
 	err = model.DB.Table("charging_pile").Where("id = ?", service.Id).
-		Update("reserve_start_time", strconv.FormatInt(StartTime, 10)).
+		Update("reserve_start_time", strconv.FormatInt(StartTime, 10)).Error
+	if err != nil {
+		return serializer.Response{
+			Status: 400,
+			Data:   nil,
+			Msg:    "添加充电桩预约开始时间出错",
+			Error:  err,
+		}
+	}
+	err = model.DB.Table("charging_pile").Where("id = ?", service.Id).
 		Update("reserve_end_time", strconv.FormatInt(Endtime, 10)).Error
 	if err != nil {
 		return serializer.Response{
 			Status: 400,
 			Data:   nil,
-			Msg:    "添加充电桩预约开始和结束时间出错",
+			Msg:    "添加充电桩预约结束时间出错",
 			Error:  err,
 		}
 	}

@@ -8,6 +8,7 @@ type User struct {
 	Phone     string `json:"phone"`
 	Email     string `json:"email"`
 	CarNumber string `json:"car_number"`
+	Money     int `json:"money"`
 	//CreateAt int64  `json:"create_at"`
 }
 
@@ -19,6 +20,7 @@ func BuildUser(user model.User) User {
 		Phone:     user.Phone,
 		Email:     user.Email,
 		CarNumber: user.CarNUmber,
+		Money: user.Money,
 		//CreateAt: user.CreatedAt.Unix(),
 	}
 }

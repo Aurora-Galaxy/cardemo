@@ -17,7 +17,7 @@ func Database(connString string) {
 	} else {
 		fmt.Println("数据库连接成功")
 	}
-	db.LogMode(true)
+	db.LogMode(false)
 	if gin.Mode() == "release" {
 		db.LogMode(false) //生产模式下不打印错误日志
 	}

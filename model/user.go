@@ -13,6 +13,7 @@ type User struct {
 	Email     string
 	Phone     string
 	CarNUmber string
+	Money     int
 	//Bantime   int
 	//OpenId    string `gorm:"unique"`
 	//Relations []User `gorm:"many2many:relation; association_jointable_foreignkey:relation_id"`
